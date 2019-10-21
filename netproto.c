@@ -1,8 +1,8 @@
 /* Name: netproto.c
 * Author: Gary Wu
 * Date: 12-10-2019
-* Revised: N/A
-*
+* Revised: 21-10-2019
+* Removed opcode, fnlength, filename from the original SFTP. Changed everything to work off of a single file pointer.
 */
 
 #include <string.h>
@@ -10,51 +10,43 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 
-int protocol(char opcode, int fnlength, char *filename)
+/* Protocol Return States
+* -1 = Error making the socket
+* 0 = Everythings fine
+* 1 = File pointer is null
+*
+*/
+// TCP/IP domain in call to socket() is AF_INET. PF_INET can be used in socket() but only socket()
+int protocol(FILE *fp, char* domain, int portnumb, struct in_addr netadd)
 {
-	//Processing through the initial opcode, file length and filename
-	if((opcode != 'a') && (opcode != 'A'))
+	int sock;
+	struct sockaddr_in servaddr
+	if((sock = socket(domain, SOCK_STREAM, 0)) < 0)
 	{
-		printf("Request type error. Exiting...\n");
-		exit(1);
+		printf("Socket Creation Error\n");
+		return(-1);
 	}
-	else 
-	{
-		char file[fnlength + 1];
-		strcpy(file, filename);
-		file[strlen(file) + 1] = '\0'; //Adding null to make sure string terminates
-		printf("A "); //Responding with one byte of opcode 'A'
-		processfile(file); //Processing the rest of the file here
-	}	
+	
+	int acknumb; //number determines file state.
+	acknumb = fileTransfer(fp);
+
 } 
 
-void processfile(char *filename)
+
+int ftpTransfer(FILE* fp)
 {
-	int ackcode; //Acknowledgement byte to print out based on file.
-	ackcode = fileexists(filename); //Checking if file already exists
-
-	if(ackcode == 1)
-	{
-		printf("%d\n", ackcode); //File exists, return acknowledgement 1
-		exit(1);
-	}
-}
-
-int fileexist(char *filename)
-{
-	//Checking if file exists
-	struct stat s = {0}
-
-	if(!(stat(filename, &s)
-	{
-		if(ENOENT == errno)
-		{
-			return(0);
-		}
-	}
-	else
+	int i, length;
+	
+	if(fp == NULL)
 	{
 		return(1);
 	}
+	
+	fp = fopen
+	
+	
 }
+
