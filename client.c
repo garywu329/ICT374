@@ -87,23 +87,39 @@ int main(int argc, char *argv[]) {
 	}
 
 	while (++i) {
-		
+		int index = 0;
+		char tempbuf[BUFSIZE] = "\0";
 		bzero(buf1, BUFSIZE);
 		bzero(buf2, BUFSIZE);
 
 		printf("client[%d]: > ", i);
 		fgets(buf1, BUFSIZE, stdin);
 		nr = strlen(buf1);
-
-		if (buf1[nr-1] == '\n'){
-			buf1[nr-1] = '\0';
+		
+		if(buf1[nr - 1] == '\n')
+		{
+			buf1[nr-1] == '\0';
 			--nr;
 		}
 
-		if (nr <=  0) {
-			continue;
+		for(int i = 0; i < strlen(buf1); ++i)
+		{
+			if(buf1[i] != ' ')
+			{
+				tempbuf[index] = buf1[i];
+			}
+			index++;
 		}
-
+		
+		index = strlen(tempbuf);
+		tempbuf[index - 1] = '\0';
+		
+		if(tempbuf[0] != '\n')
+		{
+			strcpy(buf1, tempbuf);
+		}
+		
+		index = 0;
 		str = strchr(buf1,' ');
 		if (strcmp(buf1, "quit") == 0) {
 			printf("Bye from client\n");
@@ -156,11 +172,11 @@ int main(int argc, char *argv[]) {
 				strcpy(buf1,function);
 			} else if(strcmp(function,"get") == 0) {
 				int f2;
-
 				f2 = open(file, O_WRONLY|O_CREAT, 0666);
-				printf("        %s         ", file);
+				
 				if(f2 < 0) { 
-					printf("Open Error!\n"); 
+					
+					perror("Open Error!\n"); 
 					continue; 
 				}
 
@@ -171,7 +187,7 @@ int main(int argc, char *argv[]) {
 				if (nw <= 0) {
 					exit(1);
 				}
-
+				
 				printf("client[%d]: send %s\n", i, buf1);
 
 				bzero(buf1, BUFSIZE);
@@ -187,8 +203,9 @@ int main(int argc, char *argv[]) {
 					printf("client[%d]: receive %s\n", i,buf1);
 					break;
 				}
-
+				
 				close(f2);
+				
 				printf("client[%d]: file closed\n", i);
 				continue;
 			} else if(strcmp(function,"put") == 0) {
@@ -207,7 +224,7 @@ int main(int argc, char *argv[]) {
 				printf("file %s\n", file);
 				f1 = open(file,O_RDONLY);
 				if((f1 < 0)) { 
-					printf("Open Error!\n"); 
+					perror("Open Error!\n"); 
 					continue; 
 				}
 

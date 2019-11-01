@@ -35,7 +35,7 @@ char* input_cddotdot(char* path);
 int main() {
     int sd, nsd, cli_addr_len;  pid_t pid;
     struct sockaddr_in ser_addr, cli_addr;
-
+	int opt;
     char buf[BUFSIZE];
 
     // Initialize daemon
@@ -46,7 +46,10 @@ int main() {
         perror("server:socket");
         exit(1);
     } 
-
+	if(setsockopt(sd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))){
+		printf("Error setting socket");
+		exit(1);
+	}
     /* build server Internet socket address */
     bzero((char *)&ser_addr, sizeof(ser_addr));
     ser_addr.sin_family = AF_INET;
@@ -91,8 +94,8 @@ int main() {
         /* now in child, serve the current client */
         close(sd); 
         serve_a_client(nsd, cli_addr, cli_addr_len);
-        exit(0); // Maybe remove this exit?
     }
+    exit(0);
 }
 
 void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
@@ -110,10 +113,11 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
             buf1[nr-1] = '\0';
             --nr;
         }
+
         if (nr <= 0)
             exit(1);   /* receive error */
 
-        printf("server[%d]: receive %s\n", i, buf1);
+        printf("server[%d] start: receive %s\n", i, buf1);
 
         if (strcmp(buf1, "cd")==0){
             input_cd();
@@ -122,7 +126,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 strcpy(buf1,buf2);
             }
         } else if (strcmp(buf1, "pwd")==0) { 
-            input_pwd();
+            input_pwd(buf1);
 
             if(getcwd(buf2, sizeof(buf2)) != NULL) {
                 strcpy(buf1,buf2);
@@ -176,25 +180,28 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
 
                 f1 = open(file,O_RDONLY);
                 if((f1 < 0)) { 
-                    printf("Open Error!\n"); 
+                    perror("Gets Error!\n"); 
                         continue; 
                 }
                 
                 bzero(buf1, BUFSIZE);
                 /* read from file */
+		
                 while((nr = read(f1, line, sizeof(line))) > 0) { 
                     line[nr] = '\0';
                     fprintf(stdout,"%s\n",line);
                     length=strlen(line);
-                    
                     strncpy(buf1, line, length);
                     nw = send(sd, buf1, length, 0);	/* send to client */
                     if (nw <= 0)
+			printf("send error");
                         exit(1);    /* send error */
                     printf("server[%d]: send %s\n", i,buf1);	
                 }
                 close(f1);
+		
                 printf("server[%d]: file closed\n", i);
+
                 continue;
             }
             /* function put */
@@ -208,8 +215,10 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                     exit(1);    /* send error */
                 printf("server[%d]: send %s\n", i,file);	
                 f2 = open(file,O_WRONLY|O_CREAT,0666);
-                if((f2 < 0)) { 
-                    printf("Open Error!\n"); 
+		printf("Inside F2 is: %d \n", f2);
+                if((f2 == -1)) { 
+			printf("Error in puts");
+                    perror("Open Error!\n"); 
                         continue; 
                 }
 
@@ -224,7 +233,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                     if(nw = write(f2, buf1, length)<=0){
                         exit(1);
                     }
-                    printf("server[%d]: receive %s\n", i,buf1);
+                    printf("server[%d] end: receive %s\n", i,buf1);
                     break;
                 }
                 close(f2);
@@ -287,11 +296,10 @@ void input_cd()
     chdir(env);
 }
 
-void input_pwd()
+void input_pwd(char *path)
 {
-    char *env;
-    env = getenv("PATH");
-    chdir(env);
+    getcwd(path, sizeof(path));
+    printf("Present working directory: %s\n", path);
 }
 
 char* input_dir(char *path)
