@@ -257,6 +257,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 close(f2);
                 continue;
             }
+		fclose(l);
         }
         
         
