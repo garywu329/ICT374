@@ -107,12 +107,12 @@ int main(int argc, char *argv[]) {
 			if(buf1[i] != ' ')
 			{
 				tempbuf[index] = buf1[i];
-			}
-			index++;
+				index++;
+			}	
 		}
 		
 		index = strlen(tempbuf);
-		tempbuf[index - 1] = '\0';
+		tempbuf[index] = '\0';
 		
 		if(tempbuf[0] != '\n')
 		{
@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
 		
 		index = 0;
 		str = strchr(buf1,' ');
+		printf("Buf1 in client %s, nw value %d\n.", buf1, nw);
 		if (strcmp(buf1, "quit") == 0) {
 			printf("Bye from client\n");
 			exit(0);
@@ -183,7 +184,7 @@ int main(int argc, char *argv[]) {
 				strcat(function, file);
 				strcpy(buf1,function);
 				nw = send(sd, buf1, sizeof(buf1), 0);
-
+				printf("Buf1 in client %s, nw value %d\n.", buf1, nw);
 				if (nw <= 0) {
 					exit(1);
 				}

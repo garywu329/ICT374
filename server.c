@@ -104,11 +104,11 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
     char *temp;
     char tempcatcher[BUFSIZE];
 	FILE *l;
-	l = fopen("log.txt", "w+");
-	if(l == NULL)
-	{
-		perror("Unable to create log file.\n");
-	}
+	//l = fopen("log.txt", "w+");
+	//if(l == NULL)
+	//{
+	//	perror("Unable to create log file.\n");
+	//}
 
     while (++i) {
     /* read data from client */
@@ -126,7 +126,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
             exit(1);   /* receive error */
 
         printf("server[%d] start: receive %s\n", i, buf1);
-	fprintf(l, "server[%d] start: receive %s\n", i, buf1);
+	//fprintf(l, "server[%d] start: receive %s\n", i, buf1);
         if (strcmp(buf1, "cd")==0){
             input_cd();
             
@@ -147,7 +147,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 strcpy(buf1, temp);
             }
             printf("%s\n", buf1);
-		fprintf(l, "%s\n", buf1);	
+		//fprintf(l, "%s\n", buf1);	
         } else if((nr > 2) && ((strncmp(buf1,"put", 3)==0)||(strncmp(buf1,"get", 3)==0)||(strncmp(buf1,"cd/", 3)==0)||(strncmp(buf1,"cd.", 3)==0))) {
             char *file, *ptr;
             char parentFile[BUFSIZE];
@@ -177,7 +177,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                     }
                     else {
                         perror("Error in change directory\n");
-			fprintf(l, "Error in change of directory\n");
+			//fprintf(l, "Error in change of directory\n");
                     }
                 }
             }
@@ -185,10 +185,10 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
             else if(strncmp(buf1,"get", 3)==0) {
                 file = strtok(buf1,"get");
                 printf("file %s\n", file);
-		fprintf(l, "file %s\n", file);
+		//fprintf(l, "file %s\n", file);
                 int f1;
                 char line[BUFSIZE];
-
+		printf("Contents of file %s\n", file);
                 f1 = open(file,O_RDONLY);
                 if((f1 < 0)) { 
                     perror("Gets Error!\n"); 
@@ -197,25 +197,26 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 
                 bzero(buf1, BUFSIZE);
                 /* read from file */
-		
+		printf("Buf1 in server %s, nw value %d\n.", buf1, nw);
                 while((nr = read(f1, line, sizeof(line))) > 0) { 
                     line[nr] = '\0';
                     fprintf(stdout,"%s\n",line);
-			fprintf(l, "%s\n", line);
+			//fprintf(l, "%s\n", line);
                     length=strlen(line);
                     strncpy(buf1, line, length);
                     nw = send(sd, buf1, length, 0);	/* send to client */
+		    printf("Buf1 in server %s, nw value %d\n.", buf1, nw);
                     if (nw <= 0)
 			perror("send error");
-			fprintf(l, "send error");
+			//fprintf(l, "send error");
                         exit(1);    /* send error */
                     printf("server[%d]: send %s\n", i,buf1);
-			fprintf(l, "server[%d]: send %s\n", i, buf1);	
+			//fprintf(l, "server[%d]: send %s\n", i, buf1);	
                 }
                 close(f1);
 		
                 printf("server[%d]: file closed\n", i);
-		fprintf(l, "server[%d]: file closed\n", i);
+		//fprintf(l, "server[%d]: file closed\n", i);
 
                 continue;
             }
@@ -224,17 +225,17 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 int f2;
                 file = strtok(buf1,"put");
                 printf("file %s\n", file);
-		fprintf(l, "file %s\n", file);
+		//fprintf(l, "file %s\n", file);
 
                 nw = send(sd, file, sizeof(file), 0);	/* send responese to client */
                 if (nw <= 0)
                     exit(1);    /* send error */
                 printf("server[%d]: send %s\n", i,file);
-		fprintf(l, "server[%d]: send %s\n", i,file);	
+		//fprintf(l, "server[%d]: send %s\n", i,file);	
                 f2 = open(file,O_WRONLY|O_CREAT,0666);
                 if((f2 == -1)) { 
                     perror("Open Error!\n"); 
-			fprintf(l, "Open Error!\n");
+			//fprintf(l, "Open Error!\n");
                         continue; 
                 }
 
@@ -243,7 +244,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                 while((nr = recv(sd, buf1, sizeof(buf1), 0)) > 0) {
                     buf1[nr] = '\0';
                     fprintf(stdout,"%s\n",buf1);
-			fprintf(l, "%s\n", buf1);
+			//fprintf(l, "%s\n", buf1);
                     length=strlen(buf1);
 
                     /* write into file */
@@ -251,7 +252,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
                         exit(1);
                     }
                     printf("server[%d] end: receive %s\n", i,buf1);
-			fprintf(l, "server[%d] end: receive %s\n", i,buf1);
+			//fprintf(l, "server[%d] end: receive %s\n", i,buf1);
                     break;
                 }
                 close(f2);
@@ -266,7 +267,7 @@ void serve_a_client(int sd, struct sockaddr_in cli_addr, int cli_addr_len) {
         if (nw <= 0)
             exit(1);    /* send error */
         printf("server[%d]: send %s\n", i,buf1);
-	fprintf(l, "server[%d]: send %s\n", i,buf1);
+	//fprintf(l, "server[%d]: send %s\n", i,buf1);
     }
 }
 
