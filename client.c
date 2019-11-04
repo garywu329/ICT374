@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 		}
 		
 		index = strlen(tempbuf);
-		tempbuf[index] = '\0';
+		tempbuf[index - 1] = '\0';
 		
 		if(tempbuf[0] != '\n')
 		{
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
 		
 		index = 0;
 		str = strchr(buf1,' ');
-		printf("Buf1 in client %s, nw value %d\n.", buf1, nw);
+		
 		if (strcmp(buf1, "quit") == 0) {
 			printf("Bye from client\n");
 			exit(0);
